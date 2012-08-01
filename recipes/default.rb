@@ -18,6 +18,8 @@
 #
 
 src_url = "http://jslint4java.googlecode.com/files/jslint4java-#{node[:jslint4java][:version]}-dist.zip"
+jar_file = "jslint4java-#{node[:jslint4java][:version]}.jar"
+installed_jar = "#{node[:jslint4java][:destination]}/#{jar_file}"
 
 directory node[:jslint4java][:destination] do
   mode 0755
@@ -28,15 +30,15 @@ end
 remote_file "#{Chef::Config[:file_cache_path]}/jslint4java.zip" do
   source src_url
   action :create_if_missing
+  not_if "test -f #{installed_jar}"
 end
 
 bash "extract_and_move_jslint4java" do
-  jar_file = "jslint4java-#{node[:jslint4java][:version]}.jar"
-  installed_jar = "#{node[:jslint4java][:destination]}/#{jar_file}"
   cwd Chef::Config[:file_cache_path]
   code <<-EOH
     unzip jslint4java
     mv jslint4java-#{node[:jslint4java][:version]}/#{jar_file} #{installed_jar}
     chown #{node[:jslint4java][:user]} #{installed_jar}
   EOH
+  not_if "test -f #{installed_jar}"
 end
